@@ -6,7 +6,7 @@ A prototype for flying light specks
 
 
 ## Steps to reproduce
-1. Flash the firmware to the flight controller
+1. Flash the firmware to the flight controller (if you want to use iNav)
 2. Connect the motors and other connections
 3. Test the direction of rotation for each motor
 4. Assemble the parts on the frame
@@ -31,6 +31,7 @@ A prototype for flying light specks
 
 
 ## Flash iNav to the flight controller
+Note: Skip this step if you want to use BetaFlight. Stable flight was not achieved during our attempt with iNav; however, you can give it a try if you need specific features of iNav.
 This prototype uses iFlight BLITZ Whoop F7 AIO which is a all-in-one flight controller with built-in ESC.
 The default firmware on the BLITZ Whoop F7 AIO is BetaFlight. Here is how to replace it with iNav. This guide is partially based on [this video](https://www.youtube.com/watch?v=xdf3yhlgJyc).
 
@@ -100,11 +101,11 @@ I used SERIAL4 (T4 and R4 ports).
 ## Test Motors
 Note: remove the propellers before testing the motors.
 
-1. Connect to the flight controller using the iNAV Configurator.
-2. Go to the Outputs tab.
-3. In the Configuration section `enable motor and servo output`. Then, click `Save and Reboot`.
-4. Connect again and go to the Outputs tab.
-5. In the Motor section enable `I understand the risks, propellers are removed - Enable motor control.`Another reboot might be required to enable motor control.
+1. Connect to the flight controller using the iNAV/BetaFlight Configurator.
+2. Go to the Outputs/Motors tab.
+3. For iNav, in the Configuration section `enable motor and servo output`. Then, click `Save and Reboot`.
+4. Connect again and go to the Outputs/Motors tab.
+5. In the Motor section enable `I understand the risks, propellers are removed - Enable motor control.`
 6. Place the motors in the correct direction in front of you. M2 and M4 are the front motors. The white arrow printed on the flight controller board shows the front direction, in our setup it should be facing the table. Note that the motors are facing down in this setup.
    ![image](images/parts_top_view.jpeg) 
 7. Connect a battery to the flight controller.
@@ -115,15 +116,13 @@ Note: remove the propellers before testing the motors.
 
 
 
-## Configure iNav
-After flashing the firmware and assembling the drone successfully, connect to the flight controller using the iNAV Configurator.
+## Configure the flight controller
+After flashing the firmware and assembling the drone successfully, connect to the flight controller using the iNAV/BetaFlight Configurator.
 
 
 ### Accelerometer Calibration
-1. Go to the `Calibration` tab.
-2. Position the drone in the shown orientations and press `Calibrate` after each step.
-3. Follow the steps until all of them are checked.
-4. Click `Save and Reboot`.
+For BetaFlight place the drone/board on a leveled surface then click `Calibrate Accelerometer`. 
+For iNav, Go to the `Calibration` tab and follow the steps.
 
 
 ### UART Connection
@@ -140,13 +139,13 @@ Since we are not using an RC to control the drone we need to configure the recei
 2. Select `MSP` from the Receiver type dropdown menu in the `Receiver Mode` section.
 3. Hit `Save and Reboot`
 4. Go to the `Modes` tab.
-5. In the `Arming` section, select `CH 5` for `ARM` and adjust the slider to select the upper range interval (1700 - 2100).
+5. In the `Arming` section, select `CH 5` or `AUX 1` for `ARM` and adjust the slider to select the upper range interval (1700 - 2100).
 6. Click `Save and Reboot`.
 
 
 ### Alignment
-1. Go to the `Alignment tool` tab.
-2. Adjust roll, pitch, and yaw angles to match the direction of the arrow printed on the flight controller board with the intended heading of the drone. For this drone all angles should be set to zero.
+1. For BetaFlight go to `Configuration` tab. For iNav, go to the `Alignment tool` tab.
+2. Adjust roll, pitch, and yaw angles to match the direction of the arrow printed on the flight controller board with the intended heading of the drone. For this drone all roll, pitch, and yaw shou;d be set to 0, 0, and -135 respectively.
 3. Click `Save and Reboot`.
 
 
@@ -169,7 +168,7 @@ Since we are not using an RC to control the drone we need to configure the recei
 - Ensure TX and RX pins are properly connected (use GPIO 14 for TX and GPIO 15 for RX).
 - Use a multimeter or a simple circuit like an LED and a battery to test the connections of UART pins.
 - Ensure `ls -l /dev/serial*` shows an entry.
-- Ensure the baud rate is set correctly (115200 is typical for iNAV).
+- Ensure the baud rate is set correctly (115200 is typical).
 
 
 ### Test Control
@@ -195,7 +194,7 @@ Note: Make sure propellers are removed in this step.
 1. From the WiFi menu of the Raspberry Pi in the top right corner, select `Advanced Options` > `Create Wireless Hotspot`.
 2. Set the name and password and click `Create`.
 3. Note the IP address displayed in the top right corner.
-4. Check if NetworkManager is installed `sudo apt install network-manager -y`.
+4. Check if NetworkManager is installed: `sudo apt install network-manager -y`.
 5. Enable NetworkManager on boot `sudo systemctl enable NetworkManager`.
 6. By running `nmcli connection show` you should see your hotspot name.
 7. To enable automatic connection on boot run `nmcli connection modify "MyHotspot" connection.autoconnect yes`.
