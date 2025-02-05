@@ -31,7 +31,7 @@ A prototype for flying light specks
 
 
 ## Flash iNav to the flight controller
-Note: Skip this step if you want to use BetaFlight. Stable flight was not achieved during our attempt with iNav; however, you can give it a try if you need specific features of iNav.
+Note: Skip this step if you want to use BetaFlight.
 This prototype uses iFlight BLITZ Whoop F7 AIO which is a all-in-one flight controller with built-in ESC.
 The default firmware on the BLITZ Whoop F7 AIO is BetaFlight. Here is how to replace it with iNav. This guide is partially based on [this video](https://www.youtube.com/watch?v=xdf3yhlgJyc).
 
