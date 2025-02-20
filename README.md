@@ -3,10 +3,10 @@ A prototype for flying light specks
 
 ![image](images/assembled_drone.jpeg)
 
-
+For BetaFlight or iNav see [here](betaflight_inav).
 
 ## Steps to reproduce
-1. Flash the firmware to the flight controller (if you want to use iNav)
+1. Flash the firmware to the flight controller
 2. Connect the motors and other connections
 3. Test the direction of rotation for each motor
 4. Assemble the parts on the frame
@@ -30,10 +30,9 @@ A prototype for flying light specks
 
 
 
-## Flash iNav to the flight controller
-Note: Skip this step if you want to use BetaFlight.
+## Install ArduPilot on the flight controller
 This prototype uses iFlight BLITZ Whoop F7 AIO which is a all-in-one flight controller with built-in ESC.
-The default firmware on the BLITZ Whoop F7 AIO is BetaFlight. Here is how to replace it with iNav. This guide is partially based on [this video](https://www.youtube.com/watch?v=xdf3yhlgJyc).
+The default firmware on the BLITZ Whoop F7 AIO is BetaFlight. Here is how to replace it with ArduPilot.
 
 ```
 default firmware (December 2024):
@@ -43,39 +42,10 @@ default firmware (December 2024):
 # board: manufacturer_id: IFRC, board_name: IFLIGHT_BLITZ_F7_AIO
 ```
 
-1. Download and install the latest and stable version of [iNav Configurator](https://github.com/iNavFlight/inav-configurator/releases).
-2. Download and install the latest and stable version of [BetaFlight Configurator](https://github.com/betaflight/betaflight-configurator/releases).
-3. Since at the time of writing this, there is no official target for the BLITZ Whoop F7 AIO, we need to use [an unofficially built target](https://github.com/iNavFlight/inav/pull/8988#issuecomment-2208333643). The file is also available in the `flight_controller/inav_target/inav_7.1.2_IFLIGHT_BLITZ_F7_AIO.hex` folder.
-See these for more details:
-   - [source coed of the target](https://github.com/iNavFlight/inav/tree/master/src/main/target/IFLIGHT_BLITZ_F7_AIO)
-   - [target pull request](https://github.com/iNavFlight/inav/pull/8977)
-   - [A reddit thread about the target](https://www.reddit.com/r/fpv/comments/1bs79lq/hi_for_the_blitz_f745_do_you_guys_know_which/)
-4. Open iNav Configurator. If you have issues running the application on Mac, run the following command.
-    ```
-    xattr -cr path/to/INAV\ Configurator.app
-    ```
-5. Connect the flight controller to the computer via USB.
-6. Hit the `Connect` button. It should automatically navigate to the CLI tab in the iNav Configurator.
-7. Write `verson` command and hit enter.
-8. Save the output to a file for your reference. This is for when we want to revert to the original firmware if needed.
-9. Hit the `Disconnect` button. Keep the USB cable connected to the computer.
-10. Close iNav Configurator.
-11. Open BetaFlight Configurator.
-12. Hit the `Connect` button.
-13. Go to the `Presets` tab.
-14. Hit the `Save Backup` button and save the file.
-15. Also, if you have configured the ports already take a note of the configurations in the `Ports` tab as well.
-16. Close BetaFlight Configurator.
-17. Open iNav Configurator.
-18. Hit the `Connect` button.
-19. Go to the `Firmware Flasher` tab.
-20. First hit the `Auto-selct Target` to see if it can find any official targets.
-21. If it showed "Connot prefetch firmware: Non-iNav firmware", search manually by typing `iflight` in the search targets... field.
-22. Open the `Choose a Board` dropdown to see if it has "BLITZ Whoop F7 AIO".
-23. If not, hit the `Load Firmware [Local]` button in the bottom right corner and select `inav_7.1.2_IFLIGHT_BLITZ_F7_AIO.hex` file.
-24. Hit the `Flash Firmware` button.
-25. After it's flashed successfully, hit the `Connect` button again.
-26. It will ask you about what kind of UAV you are building, I chose Mini Qual with 3" Propellers.
+1. Install [STM32CubeProgrammer](https://www.st.com/en/development-tools/stm32cubeprog.html).
+2. Install a compatible ground station software from [here](https://ardupilot.org/plane/docs/common-install-gcs.html) (QGroundControl for mac).
+3. Open [this link](https://firmware.ardupilot.org/), go to Copter > stable > BlitzF745AIO and download `arducopter_with_bl.hex`.
+4. Follow instructions (here)[https://ardupilot.org/plane/docs/common-loading-firmware-onto-chibios-only-boards.html#upload-the-firmware-to-autopilot] to install the firmware using STM32 Cube Programmer.
 
 
 
@@ -101,105 +71,87 @@ I used SERIAL4 (T4 and R4 ports).
 ## Test Motors
 Note: remove the propellers before testing the motors.
 
-1. Connect to the flight controller using the iNAV/BetaFlight Configurator.
-2. Go to the Outputs/Motors tab.
-3. For iNav, in the Configuration section `enable motor and servo output`. Then, click `Save and Reboot`.
-4. Connect again and go to the Outputs/Motors tab.
-5. In the Motor section enable `I understand the risks, propellers are removed - Enable motor control.`
-6. Place the motors in the correct direction in front of you. M2 and M4 are the front motors. The white arrow printed on the flight controller board shows the front direction, in our setup it should be facing the table. Note that the motors are facing down in this setup.
+1. Connect to the flight controller using the QGC. And go to the Vehicle Configuration by clicking on the `Q` icon on the top left corner.
+2. Go to the Motors tab.
+3. Place the motors in the correct direction in front of you. M2 and M4 are the front motors. The white arrow printed on the flight controller board shows the front direction, in our setup it should be facing the table. Note that the motors are facing down in this setup.
    ![image](images/parts_top_view.jpeg) 
-7. Connect a battery to the flight controller.
-8. Spin each motor slowly and feel the direction of rotation with your fingers.
-9. If the motor is rotating in the wrong direction note its number.
-10. Grab your solder and swap any two wires of the motor with wrong direction to reverse its rotation direction.
-11. Finally, test one more time to make sure each motor rotates in the direction shown in the picture (M1 and M4 cw, M2 and M3 ccw).
+4. Connect a battery to the flight controller.
+5. Enable the slider and motor output then spin each motor slowly and feel the direction of rotation with your fingers.
+6. If the motor is rotating in the wrong direction note its number.
+7. Grab your solder and swap any two wires of the motor with wrong direction to reverse its rotation direction.
+8. Finally, test one more time to make sure each motor rotates in the direction shown in the picture (M1 and M4 cw, M2 and M3 ccw).
 
 
 
 ## Configure the flight controller
-After flashing the firmware and assembling the drone successfully, connect to the flight controller using the iNAV/BetaFlight Configurator.
+After flashing the firmware and assembling the drone successfully, connect to the flight controller using USB and open QGC.
+Set Alignment to None because in our design the flight controller arrow is facing forward.
 
 
-### Accelerometer Calibration
-For BetaFlight place the drone/board on a leveled surface then click `Calibrate Accelerometer`. 
-For iNav, Go to the `Calibration` tab and follow the steps.
+### Frame
+Choose Quad and `X` as the frame type.
+
+### Sensor Calibration
+Go to the `Sensors` tab and follow the calibration steps for Accelerometer, Level Horizon, and Gyro.
 
 
 ### UART Connection
-1. Go to the `Ports` tab.
-2. Find the UART connected to the Raspberry Pi (UART4).
-3. Enable the MSP protocol for that UART. This for communicating with the Raspberry Pi.
-4. Click `Save and Reboot`.
-
-
-### Receiver
-Since we are not using an RC to control the drone we need to configure the receiver functionalities accordingly.
-
-1. Go to the `Receiver` tab.
-2. Select `MSP` from the Receiver type dropdown menu in the `Receiver Mode` section.
-3. Hit `Save and Reboot`
-4. Go to the `Modes` tab.
-5. In the `Arming` section, select `CH 5` or `AUX 1` for `ARM` and adjust the slider to select the upper range interval (1700 - 2100).
-6. Click `Save and Reboot`.
-
-
-### Alignment
-1. For BetaFlight go to `Configuration` tab. For iNav, go to the `Alignment tool` tab.
-2. Adjust roll, pitch, and yaw angles to match the direction of the arrow printed on the flight controller board with the intended heading of the drone. For this drone all roll, pitch, and yaw shou;d be set to 0, 0, and -135 respectively.
-3. Click `Save and Reboot`.
-
+1. Go to the `Parameters` tab.
+2. Set `SERIAL4_PROTOCOL` to MAVLink2.
+3. Set `SERIAL4_BAUD` to 115200.
+4. Click `Reboot Vehicle` from the `Tools` menu.
 
 
 ## Configure Raspberry Pi
+
+### Install ubuntu
+1. Download ubuntu server for Raspberry Pi from [here](https://ubuntu.com/download/raspberry-pi). I used 24.04.1 server arm64 raspi.
+2. Use Raspberry Pi Imager to install the downloaded image on an SD card.
+3. During the installation set up WLan, username and password, and enable ssh for easier access.
+4. Insert the card into the Raspberry Pi and boot.
+
+
+### Install ROS 2
+1. Follow instructions [here](https://docs.ros.org/en/jazzy/Installation.html) to install ROS 2 Jazzy.
+2. Add ros to bashrc: 
+   ```
+   echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+### Install Mavros
+See [here](https://github.com/mavlink/mavros/blob/ros2/mavros/README.md#binary-installation-deb) for instructions.
+Note that you need to use the appropriate ros distribution foxy, jazzy, etc.
+
+```
+sudo apt install ros-jazzy-mavros ros-jazzy-mavros-extras
+sudo apt install geographiclib-tools
+sudo geographiclib-get-geoids egm96-5
+sudo geographiclib-get-gravity egm96
+sudo geographiclib-get-magnetic igrf
+```
 
 ### UART Connection
 1. add the following lines to the `/boot/firmware/config.txt`:
   ```
   enable_uart=1
-  dtoverlay=disable-bt
+  dtoverlay=disable-bt,uart0,ctsrts
   ```
 1. Ensure there is no line like `console=serial0,115200` in `/boot/firmware/cmdline.txt`. If present, remove it to prevent the Raspberry Pi from using UART for console output.
 2. Reboot Raspberry Pi: `sudo reboot`.
 3. Power up the drone via a battery. And connect the Raspberry Pi's power cable to the flight controller board.
-4. Run `uart/test.py` on the Raspberry Pi to test the communication. It should print a response.
 
+
+### Run Mavros
+1. SSH to the Raspberry Pi.
+2. Start `tmux`.
+3. Split the window using `control+b` then `%`.
+4. In one window run `ros2 launch mavros apm.launch fcu_url:=serial:///dev/ttyAMA0:115200`
+5. In the other run `ros2 topic echo /mavros/state`
 
 ### Troubleshoot
 - Ensure TX and RX pins are properly connected (use GPIO 14 for TX and GPIO 15 for RX).
 - Use a multimeter or a simple circuit like an LED and a battery to test the connections of UART pins.
-- Ensure `ls -l /dev/serial*` shows an entry.
+- Ensure `ls -l /dev/serial*` or `ls -l /dev/ttyAMA0` shows an entry.
 - Ensure the baud rate is set correctly (115200 is typical).
 
-
-### Test Control
-Use a simple MSP library to test arming and control functions.
-Note: Make sure propellers are removed in this step.
-
-1. Clone `https://github.com/thecognifly/YAMSPy.git`.
-2. Run `Examples/simpleUI.py`.
-3. Press `A` to arm the drone.
-4. Adjust the throttle using `W/E` keys.
-5. Test other functionalities according to the displayed help notes.
-6. Finally, disarm the drone and quit.
-
-
-### Setup SSH
-1. From the Raspberry Pi menu in the top left corner, select `Preferences` > `Raspberry Pi Configuration`.
-2. Go to the interfaces tab and enable SSH.
-3. Now you can connect to your Raspberry Pi via running `ssh username@ip` on another device.
-4. Note that both devices should be on the same network, e.g. be connected to the same router. If this does not work for you follow the steps in the Setup Hotspot section.
-
-
-### Setup Hotspot
-1. From the WiFi menu of the Raspberry Pi in the top right corner, select `Advanced Options` > `Create Wireless Hotspot`.
-2. Set the name and password and click `Create`.
-3. Note the IP address displayed in the top right corner.
-4. Check if NetworkManager is installed: `sudo apt install network-manager -y`.
-5. Enable NetworkManager on boot `sudo systemctl enable NetworkManager`.
-6. By running `nmcli connection show` you should see your hotspot name.
-7. To enable automatic connection on boot run `nmcli connection modify "MyHotspot" connection.autoconnect yes`.
-8. You can also set a priority to ensure this connection is preferred `nmcli connection modify "MyHotspot" connection.autoconnect-priority 100`.
-9. To ensure the hotspot uses the same IP address run: `nmcli connection modify "MyHotspot" ipv4.method shared`
-10. Restart NetworkManager to apply the changes `sudo systemctl restart NetworkManager`.
-11. Reboot your Raspberry Pi to confirm that the hotspot starts automatically `sudo reboot`.
-12. Now you can connect to this hotspot and ssh to the Raspberry Pi.
