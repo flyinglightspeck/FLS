@@ -34,6 +34,9 @@ For BetaFlight or iNav see [here](betaflight_inav).
 This prototype uses iFlight BLITZ Whoop F7 AIO which is a all-in-one flight controller with built-in ESC.
 The default firmware on the BLITZ Whoop F7 AIO is BetaFlight. Here is how to replace it with ArduPilot.
 
+Custom build ArduPilot with optical flow support:
+with ek3 optical flow fusion: https://custom.ardupilot.org/builds/copter:BlitzF745AIO:450ffd1520a64c00f0bd4492a479e43c75e170d7:e71419b2971fff2e338a09a9cc65b3b2/
+https://custom.ardupilot.org/builds/copter:BlitzF745AIO:bfa40f76d8808a8c51c63293a869967a488f229b:e2ae6074c5bcf21c45d9cb0401fd5167/
 ```
 default firmware (December 2024):
 # version
@@ -97,9 +100,19 @@ Go to the `Sensors` tab and follow the calibration steps for Accelerometer, Leve
 
 ### UART Connection
 1. Go to the `Parameters` tab.
-2. Set `SERIAL4_PROTOCOL` to MAVLink2.
-3. Set `SERIAL4_BAUD` to 115200.
-4. Click `Reboot Vehicle` from the `Tools` menu.
+2. Set `FRAME_TYPE` to BetaFlightX.
+3. Set `ARMING_CHECK` to 0.
+4. Set `SERIAL4_PROTOCOL` to MAVLink2 for Raspberry Pi serial connection.
+5. Set `SERIAL4_BAUD` to 115200.
+6. Set `SERIAL3_PROTOCOL` to MAVLink1 for the optical flow sensor.
+7. Set `SERIAL3_BAUD` to 115200.
+8. Set `SERIAL3_OPTIONS` to `Don’t forward mavlink to/from`.
+9. Set `FLOW_TYPE` to Mavlink.
+10. Set `RNGFND1_TYPE` to Mavlink.
+11. Set `RNGFND1_MAX` to 200 to set range finder’s maximum range to 2m. 
+12. Set `RNGFND1_MIN` to 1.
+13. Set `RNGFND1_ORIENT` to 25 (Downward).
+14. Click `Reboot Vehicle` from the `Tools` menu.
 
 
 ## Configure Raspberry Pi
@@ -146,8 +159,18 @@ sudo geographiclib-get-magnetic igrf
 1. SSH to the Raspberry Pi.
 2. Start `tmux`.
 3. Split the window using `control+b` then `%`.
-4. In one window run `ros2 launch mavros apm.launch fcu_url:=serial:///dev/ttyAMA0:115200`
+4. In one window run `ros2 launch mavros apm.launch fcu_url:=serial:///dev/ttyAMA0:115200 gcs_url:=udp://@192.168.8.130:14550`
 5. In the other run `ros2 topic echo /mavros/state`
+
+
+### Install Mavlink-Router
+Install [mavlink-router](https://github.com/mavlink-router/mavlink-router?tab=readme-ov-file).
+```mavlink-routerd -e 192.168.8.130:14550 /dev/ttyAMA0:115200```
+
+
+### MavProxy
+https://ardupilot.org/mavproxy/docs/getting_started/starting.html
+```mavproxy.py --master=/dev/ttyAMA0 --baudrate=115200```
 
 ### Troubleshoot
 - Ensure TX and RX pins are properly connected (use GPIO 14 for TX and GPIO 15 for RX).
@@ -155,3 +178,7 @@ sudo geographiclib-get-magnetic igrf
 - Ensure `ls -l /dev/serial*` or `ls -l /dev/ttyAMA0` shows an entry.
 - Ensure the baud rate is set correctly (115200 is typical).
 
+
+### Useful Resources
+https://ardupilot.github.io/MethodicConfigurator/
+https://www.ecalc.ch/index.htm
