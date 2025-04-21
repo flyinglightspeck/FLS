@@ -1,25 +1,40 @@
 import serial
 import struct
-import time
 
 ser = serial.Serial('/dev/serial0', 115200, timeout=1)
 
-def create_msp_packet(command, data=b''):
-    header = b'$M<'
-    size = len(data)
-    checksum = (size ^ command ^ sum(data)) & 0xFF
-    packet = header + struct.pack('<BB', size, command) + data + struct.pack('<B', checksum)
-    return packet
+def send_msp_command(command):
+    """Send an MSP command without a payload."""
+    packet = b'$M<' + bytes([0, command, command])  # Checksum = XOR of payload and command
+    ser.write(packet)
 
-# Command to request attitude (MSP_ATTITUDE = 108)
-MSP_ATTITUDE = 108
-packet = create_msp_packet(MSP_ATTITUDE)
+def read_msp_response():
+    """Read MSP response dynamically."""
+    header = ser.read(3)
+    if header != b'$M>':
+        print(f"Invalid header: {header}")
+        return None
 
-ser.write(packet)
+    length_byte = ser.read(1)
+    if not length_byte:
+        print("No length byte received.")
+        return None
 
-time.sleep(0.1)
-if ser.in_waiting:
-    response = ser.read(ser.in_waiting)
-    print("Response:", response)
+    length = ord(length_byte)
+    command = ser.read(1)
+    payload = ser.read(length)
+    checksum = ser.read(1)
 
-ser.close()
+    print(f"Raw Response: payload={payload.hex()}")
+
+    if len(payload) != length:
+        print(f"Warning: Expected {length} bytes, received {len(payload)} bytes.")
+
+    if len(payload) >= 2:
+        distance_cm = struct.unpack('<H', payload[:2])[0] / 10.0  # Convert to cm
+        print(f"Distance from floor: {distance_cm} cm")
+    else:
+        print("Unknown response format.")
+
+send_msp_command(151)  # MSP_RANGEFINDER
+read_msp_response()
