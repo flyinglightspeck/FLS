@@ -1,4 +1,4 @@
-# FLS with Crazyflie Bolt 
+# FLS with MicoAir H743 AIO 
 
 ## Parts
 - [MicoAir H743 AIO](https://store.micoair.com/product/micoair743v2-aio-45a/)
@@ -20,6 +20,9 @@
 You can also use CM4 instead of CM5 (CM4 is slower than CM5):
 - [Raspberry Pi CM4](https://www.raspberrypi.com/products/compute-module-4/?variant=raspberry-pi-cm4104032)
 - [Nano Base Board (A) for Raspberry Pi Compute Module 4](https://www.waveshare.com/cm4-nano-a.htm), also on [Amazon](https://a.co/d/gfsPdik)
+
+
+## Assembly
 
 
 
