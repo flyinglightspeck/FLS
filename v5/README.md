@@ -24,6 +24,44 @@ You can also use CM4 instead of CM5 (CM4 is slower than CM5):
 
 ## Assembly
 
+### 3D Print
+Print the following parts using Bambu PA6-CF filament.
+
+| name          | qty |
+|---------------|-----|
+| frame_v3      | 1   |
+| pi_holder_v2  | 4   |
+| landing_gear  | 2   |
+| cam_holder_l  | 1   |
+| cam_holder_r  | 1   |
+| sensor_holder | 1   |
+
+Tips:
+- Use smooth PEI / high temp plate.
+- Clean the oil, fingerprints, and printing waste from the plate before printing.
+- For the frame use 0.2mm strength profile, add 5mm of brim, and use concentric top and bottom surface pattern.
+- For other parts use 0.16mm high quality profile, add brim if needed.
+- After printing completes, wait util the plate temperature drops to around 40 degrees Celsius. Otherwise, the 
+  printed part might bend permanently.
+
+
+### Installation
+
+1. Install the motors to the frame using the black M2 screws that are included in their package. You can install 
+   them on either side of the frame.
+2. Install the rubber grommets on the FC in a way that the taller part is on the side that the USB port is.
+3. Solder the battery cable, Molex cable and the capacitor to the FC battery pads.
+4. Install the FC on the frame. Note the orientation of the FC. The white arrow on the top of the FC shows the front 
+   direction.
+5. Solder the wires of the motors to the motor pads of the FC, the order of the wires does not matter.
+6. Install Pi holders on the frame.
+7. Install Pi CM5 on the frame, note the orientation.
+8. Solder a Molex cable, power adapter, and TX/RX cables on the NANO baseboard.
+9. Install the NANO board on the Pi CM5.
+10. Remove the camera sensor from the Raspberry Pi Camera board and install the camera holders to it using 4 M2x3 
+    screws.
+11. Install the camera holders on the Pi holders using 2 M1.4x4 screws.
+12. Connect the camera board connector to the MIPI0 connector of the NANO board.
 
 
 ## Configure Raspberry Pi CM4/CM5
