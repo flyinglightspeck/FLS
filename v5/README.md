@@ -53,15 +53,42 @@ Tips:
 3. Solder the battery cable, Molex cable and the capacitor to the FC battery pads.
 4. Install the FC on the frame. Note the orientation of the FC. The white arrow on the top of the FC shows the front 
    direction.
+
 5. Solder the wires of the motors to the motor pads of the FC, the order of the wires does not matter.
 6. Install Pi holders on the frame.
+![image](images/frame_sensor_holder.jpeg)
+![image](images/frame_fc.jpeg)
+![image](images/fc_battery_wire.jpeg)
+
+
 7. Install Pi CM5 on the frame, note the orientation.
+![image](images/frame_pi.jpeg)
+
 8. Solder a Molex cable, power adapter, and TX/RX cables on the NANO baseboard.
+![image](images/nano.jpeg)
+![image](images/nano_wiring_a.jpeg)
+![image](images/nano_wiring_b.jpeg)
+
+We used the 4-pin connector that comes with the FC as the TX/RX cable. We removed the black and green wires as we 
+are not using them. This connector connects the FC TX to Pi RX (yellow) and FC RX to Pi TX (green).
+
 9. Install the NANO board on the Pi CM5.
-10. Remove the camera sensor from the Raspberry Pi Camera board and install the camera holders to it using 4 M2x3 
+![image](images/frame_nano.jpeg)
+10. Connect the TX/RX and power connector to the FC.
+![image](images/fc_power_connector.jpeg)
+![image](images/fc_pi_connector.jpeg)
+
+11. Remove the camera sensor from the Raspberry Pi Camera board and install the camera holders to it using 4 M2x3 
     screws.
-11. Install the camera holders on the Pi holders using 2 M1.4x4 screws.
-12. Connect the camera board connector to the MIPI0 connector of the NANO board.
+![image](images/cam_holder_front.jpeg)
+![image](images/cam_holder_back.jpeg)
+
+12. Install the camera holders on the Pi holders using 2 M1.4x4 screws.
+13. Connect the camera board connector to the MIPI0 connector of the NANO board.
+![image](images/frame_cam_holder.jpeg)
+
+14. Do not install propellers until you have conducted the initial tests.
+![image](images/v5_assembled.jpeg)
 
 
 ## Configure Raspberry Pi CM4/CM5
