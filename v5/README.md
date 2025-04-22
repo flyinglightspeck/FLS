@@ -106,6 +106,37 @@ After installing the OS, ssh to the RPi and update the packages:
 sudo apt update && sudo apt upgrade -y
 ```
 
+### Camera Configuration
+```
+sudo vim /boot/firmware/config.txt
+```
+Add the following line under [cm4] or [cm5]:
+```
+dtoverlay=imx708,cam0
+```
+
+### Enable UART
+1. Open config file:
+```commandline
+sudo vim /boot/firmware/config.txt
+```
+
+2. Paste this at the end
+```
+enable_uart=1
+dtoverlay=disable-bt,uart0,ctsrts
+```
+
+3. Open cmdline file:
+```commandline
+sudo vim /boot/firmware/cmdline.txt
+```
+
+3. Remove this phrase `console=serial0,115200` if present.
+2. Reboot Raspberry Pi: 
+```commandline
+sudo reboot
+```
 
 ### Create Python Environment
 ```
@@ -122,9 +153,72 @@ source env/bin/activate
 Install [mavlink-router](https://github.com/mavlink-router/mavlink-router?tab=readme-ov-file).
 
 We will use this to connect to the drone using QGroundStation over WiFi and through Pi.
+
+When the Pi and ground computer are connected to the same network run this on the Pi:
+```commandline
+mavlink-routerd -e 192.168.8.197:14550 /dev/ttyAMA0:57600
+```
+
+Then open QGroundControl and wait until it connects to the FC.
+
+In the first stages of build process we need to connect to the drone wirelessly to configure and fly it using 
+joystick. Hence, it's convenient to start mavlink-routerd automatically on Pi start up.
+
+1. Create a service file:
+
+```commandline
+sudo vim /etc/systemd/system/mavlink-router.service
+```
+
+2. Paste this:
 Replace `192.168.8.197` with the IP address of your ground computer.
 
-```mavlink-routerd -e 192.168.8.197:14550 /dev/ttyAMA0:57600```
+```
+[Unit]
+Description=MAVLink Router
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/mavlink-routerd -e 192.168.8.197:14550 /dev/ttyAMA0:57600
+Restart=on-failure
+User=pi  # or whatever user you use
+
+[Install]
+WantedBy=multi-user.target
+```
+
+3. Reload systemd to pick up the new service:
+```commandline
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+```
+
+4. Enable it to run at boot:
+```commandline
+sudo systemctl enable mavlink-router.service
+```
+
+5. Start it now (optional):
+```commandline
+sudo systemctl start mavlink-router.service
+```
+
+6. Confirm it works:
+```commandline
+sudo systemctl status mavlink-router.service
+```
+
+If you want to change the command later:
+```commandline
+sudo vim /etc/systemd/system/mavlink-router.service
+sudo systemctl daemon-reload
+sudo systemctl restart mavlink-router.service
+```
+
+If you no longer need it in the future:
+```commandline
+sudo systemctl disable mavlink-router.service
+```
 
 
 ### Configure LED Strip
@@ -138,16 +232,6 @@ pip install --force-reinstall adafruit-blinka
 TBD
 ```
 git clone https://github.com/flslab/*.git
-```
-
-
-### Camera Configuration
-```
-sudo vim /boot/firmware/config.txt
-```
-Add the following line under [cm4] or [cm5]:
-```
-dtoverlay=imx708,cam0
 ```
 
 
