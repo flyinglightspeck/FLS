@@ -295,3 +295,81 @@ Run for 10 seconds to test:
 ```
 ./eye -t 10
 ```
+
+## Configure ArduPilot
+
+### Install Ground Station Software
+
+Install QGroundControl, QGC for short, from here.
+
+[Mission Planner](https://ardupilot.org/planner/docs/mission-planner-installation.html) can also be used if on Windows.
+
+### Install Firmware
+
+We used ArduPilot 4.5.7 for this built. If your FC has another firmware installed by default, like BetaFlight of PX4,
+first refer to Install Bootloader and download the bootloader on the FC. This information is usually marked on the
+packaging box of the FC.
+
+1. Download `4.5.7/MicoAir743v2_ArduCopter-4.5.7.apj`
+   from [here](https://github.com/micoair/MicoAir743v2/tree/main/Firmware/Ardupilot).
+2. Open QGC and go to firmware tab by clicking on the Q icon and Vehicle Configuration in the top left
+   corner.
+3. When in the firmware tab, connect the FC to your computer using a USB type C cable.
+4. Choose ArduPilot and select Custom firmware file... from the dropdown menu.
+5. Hit Ok then browse and choose the `.apj` file you downloaded.
+6. Wait until installation completes. Disconnect and connect and the board again.
+
+### Choose Frame Type
+
+In the Frame tab choose Quad and set the type to X.
+
+### Sensor Calibration
+
+Complete accelerometer calibration and level horizon from the Sensors tab.
+
+### Battery Configuration
+
+1. Go to the Power tab and set the capacity of battery to 650mAh.
+2. Go to the Parameters tab and set `BATT_LOW_VOLT` to 6.6. This is the minimum voltage for 2S battery. Use 10.5 for
+   3S or 14.0 for 4S.
+
+### Disable Arming Checks
+
+Go to the Parameters and uncheck all items from `ARMING_CHECK`.
+
+### Make Sure Serial Port is Set Correctly
+
+We are using UART1 for FC - Pi communications. The default settings works without modifications. Make sure to change
+the baud rate in the ArduPilot parameters and scripts/commands if you are not using the default.
+`SERIAL1_PROTOCOL = MAVLink2`
+`SERIAL1_BAUD = 57600`
+
+### Tune the PID
+
+1. Go to the Tuning tab.
+2. Enable the advanced mode.
+3. Set the gains for the Rate controller according to this table for each axis:
+
+| Axis  | P    | I    | D     |
+|-------|------|------|-------|
+| Roll  | 0.05 | 0.05 | 0.003 |
+| Pitch | 0.05 | 0.05 | 0.003 |
+| Yaw   | 0.04 | 0.04 | 0     |
+
+### Enable Harmonic Notch Filter
+
+In ArduPilot, a harmonic notch filter is a type of signal processing filter used to attenuate specific frequencies,
+typically those related to motor noise or vibrations. It's designed to remove these interfering frequencies from gyro
+data, improving the accuracy and reliability of the flight control system.
+
+1. Go to Parameters tab and set `INS_HNTCH_ENABLE` to 1.
+2. Reboot using the option in the Tools menu.
+3. Set the following parameters:
+
+```
+INS_HNTCH_MODE = 1
+INS_HNTCH_FREQ = 80
+INS_HNTCH_BW = 40
+INS_ACCEL_FILTER = 20
+INS_GYRO_FILTER = 40 
+```
