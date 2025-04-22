@@ -1,4 +1,4 @@
-# FLS with MicoAir H743v2 AIO
+# 60mm FLS with MicoAir H743v2 AIO
 
 ## Parts
 
