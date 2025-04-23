@@ -259,7 +259,7 @@ pip install --force-reinstall adafruit-blinka
 TBD
 
 ```
-git clone https://github.com/flslab/*.git
+git clone https://github.com/flslab/fls-ap-offboard-controller.git
 ```
 
 ### Marker Localization
@@ -312,7 +312,7 @@ packaging box of the FC.
 
 1. Download `4.5.7/MicoAir743v2_ArduCopter-4.5.7.apj`
    from [here](https://github.com/micoair/MicoAir743v2/tree/main/Firmware/Ardupilot).
-2. Open QGC and go to firmware tab by clicking on the Q icon and Vehicle Configuration in the top left
+2. Open QGC and go to Firmware tab by clicking on the Q icon and Vehicle Configuration in the top left
    corner.
 3. When in the firmware tab, connect the FC to your computer using a USB type C cable.
 4. Choose ArduPilot and select Custom firmware file... from the dropdown menu.
@@ -341,8 +341,8 @@ Go to the Parameters and uncheck all items from `ARMING_CHECK`.
 
 We are using UART1 for FC - Pi communications. The default settings works without modifications. Make sure to change
 the baud rate in the ArduPilot parameters and scripts/commands if you are not using the default.
-`SERIAL1_PROTOCOL = MAVLink2`
-`SERIAL1_BAUD = 57600`
+`SERIAL1_PROTOCOL 2 (MAVLink2)`
+`SERIAL1_BAUD 57600`
 
 ### Tune the PID
 
@@ -367,9 +367,81 @@ data, improving the accuracy and reliability of the flight control system.
 3. Set the following parameters:
 
 ```
-INS_HNTCH_MODE = 1
-INS_HNTCH_FREQ = 80
-INS_HNTCH_BW = 40
-INS_ACCEL_FILTER = 20
-INS_GYRO_FILTER = 40 
+INS_HNTCH_MODE 1
+INS_HNTCH_FREQ 80
+INS_HNTCH_BW 40
+INS_ACCEL_FILTER 20
+INS_GYRO_FILTER 40 
 ```
+
+### Test Motors
+1. Disconnect FC from QGC.
+2. Connect battery to the drone and wait until it stops buzzing.
+3. Connect FC to QGC using USB.
+4. In QGC, go to Motors tab.
+5. Enable motor sliders.
+6. Set the spin percentage to 5-10% by dragging the slider.
+7. Spin the motors in turn by clicking on A, B, C, and D buttons.
+8. Check the rotation direction of the motors.
+
+If you need to change the direction of motors follow these steps:
+
+1. Set SERVO_BLH_AUTO to 1 (enabled) and set SERVO_BLH_MASK to 15 (enable Channel1-4).
+   **Note:** you should restore these two parameters to their default values after the ESC 
+   configuration, otherwise the ESC cannot be worked normally.
+2. Reboot the drone.
+3. Go to [esc-configurator.com](https://esc-configurator.com).
+4. Click on Open Port Selection in the upper right corner, select “MicoAir743“, and then click on Connect.
+5. Click on Read Settings in the bottom right corner to read the configuration of the ESCs.
+6. Change the motor rotation direction (Normal or Reverse) in the Motor Direction option for each ESC. The number 
+   in front of ESC is the same as the numbers printed on the FC board.
+7. Click Write Settings after configuration.
+8. Disconnect.
+9. Test the directions again to ensure they are correct.
+
+## Initial Flight Test
+
+After configuring ArduPilot, you are ready to conduct your first flight using a joystick.
+
+1. Connect the joystick to your ground computer.
+2. Open QGC.
+2. Configure the joystick and assign buttons if needed in the Joystick tab of QGC.
+TBD
+
+## Install Compass
+
+## Install MTF-02 (Flow and Range Finder Sensor)
+1. Set the following parameters in QGC:
+```
+SERIAL4_BAUD 115
+SERIAL4_OPTIONS 1024 (Don’t forward mavlink to/from)
+SERIAL4_PROTOCOL 1 (MAVLink1)
+FLOW_TYPE 5 (MAVLink)
+RNGFND1_TYPE 10 (MAVLink)
+```
+2. Reboot FC to refresh the list of parameters.
+3. Set the following parameters.
+```
+RNGFND1_MAX_CM 800
+RNGFND1_MIN_CM 1
+RNGFND1_ORIENT 25 (Down)
+```
+
+```
+AHRS_EKF_TYPE 3
+EK3_SRC_OPTIONS 0
+EK3_SRC1_POSXY 0 (None)
+EK3_SRC1_POSZ 2 (RangeFinder)
+EK3_SRC1_VELXY 5 (OpticalFlow)
+EK3_SRC1_VELZ 0 (None)
+EK3_SRC1_YAW 1 (Compass)
+```
+
+```
+AHRS_GPS_USE 0 (Disabled)
+```
+
+5. Connect the flow sensor using its connector the UART4 pin on the FC.
+
+
+
