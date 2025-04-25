@@ -355,11 +355,11 @@ the baud rate in the ArduPilot parameters and scripts/commands if you are not us
 2. Enable the advanced mode.
 3. Set the gains for the Rate controller according to this table for each axis:
 
-| Axis  | P    | I    | D     |
-|-------|------|------|-------|
-| Roll  | 0.05 | 0.05 | 0.003 |
-| Pitch | 0.05 | 0.05 | 0.003 |
-| Yaw   | 0.04 | 0.04 | 0     |
+| Axis  | P    | I     | D     |
+|-------|------|-------|-------|
+| Roll  | 0.04 | 0.05  | 0.003 |
+| Pitch | 0.04 | 0.05  | 0.003 |
+| Yaw   | 0.15 | 0.018 | 0     |
 
 ### Enable Harmonic Notch Filter
 
