@@ -30,28 +30,33 @@ You can also use CM4 instead of CM5 (CM4 is slower than CM5):
 ### 3D Print
 
 We used Bambu X1 Carbon printer to print the following parts using Bambu PA6-CF filament. The models are available
-in the `3d` directory.
+in the `3d` directory. All the items you need to print is inside the Bambu project named `print_plates.3mf` open 
+this file using Bambu studio and print the plates.
 
-| name          | qty |
-|---------------|-----|
-| frame_v3      | 1   |
-| pi_holder_v2  | 4   |
-| landing_gear  | 2   |
-| cam_holder_l  | 1   |
-| cam_holder_r  | 1   |
-| sensor_holder | 1   |
+| name                | qty |
+|---------------------|-----|
+| frame_v4            | 1   |
+| pi_holder_v2_a      | 2   |
+| pi_holder_v2_b      | 1   |
+| pi_holder_v2_b_slit | 1   |
+| landing_gear_v3     | 2   |
+| cam_holder_l        | 1   |
+| cam_holder_r        | 1   |
+| sensor_holder       | 1   |
 
-Tips:
+Important Notes:
 
 - Dry the filament before printing for the best result.
 - Use smooth PEI / high temp plate.
 - Clean the oil, fingerprints, and printing waste from the plate before printing.
-- For printing the frame use `0.2mm strength` profile, add 5mm of outer brim, and use `concentric` top and bottom
-  surface
-  pattern.
-- For other parts use `0.16mm high quality` profile, add brim if necessary.
+- For printing Plate 1 use `0.2mm strength` profile, add 5mm of outer brim, and use `concentric` top and bottom
+  surface pattern.
+- For Plates 2 and 3 use `0.16mm high quality` profile. Enable 5mm outer brim for Plate 2. Enable manual 
+  support for Plate 3.
 - After printing completes do not remove the part. Wait util the plate temperature drops to around 40 degrees
-  Celsius. Otherwise, the printed part might bend permanently.
+  Celsius. Otherwise, the printed part may bend permanently.
+- Store the filament in a sealed zip bag after use.
+
 
 ### Installation
 
