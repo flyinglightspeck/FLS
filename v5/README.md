@@ -257,6 +257,16 @@ sudo systemctl disable mavlink-router.service
 ```
 pip install rpi_ws281x adafruit-circuitpython-neopixel
 pip install --force-reinstall adafruit-blinka
+pip install adafruit-circuitpython-neopixel-spi lgpio
+```
+
+Enable SPI:
+```
+vim /boot/firmware/config.txt
+```
+Paste this:
+```
+dtparam=spi=on
 ```
 
 ### Offboard Controller
