@@ -182,7 +182,7 @@ We will use this to connect to the drone using QGroundStation over WiFi and thro
 When the Pi and ground computer are connected to the same network run this on the Pi:
 
 ```commandline
-mavlink-routerd -e 192.168.8.197:14550 /dev/ttyAMA0:57600
+mavlink-routerd -e 192.168.8.197:14550 /dev/ttyAMA0:115200
 ```
 
 Then open QGroundControl and wait until it connects to the FC.
@@ -285,6 +285,7 @@ Build:
 cd fls-marker-localization
 mkdir build
 cd build
+mkdir logs
 cmake ..
 make -j4
 ```
@@ -338,6 +339,13 @@ Complete accelerometer calibration and level horizon from the Sensors tab.
 2. Go to the Parameters tab and set `BATT_LOW_VOLT` to 6.6. This is the minimum voltage for 2S battery. Use 10.5 for
    3S or 14.0 for 4S.
 
+### Logging
+```
+LOG_BITMASK 2506751 (Check all except for camera, raw imu, and video stabilization)
+INS_LOG_BAT_MASK 1
+INS_LOG_BAT_OPT 5
+```
+
 ### Disable Arming Checks
 
 Go to the Parameters and uncheck all items from `ARMING_CHECK`.
@@ -346,8 +354,10 @@ Go to the Parameters and uncheck all items from `ARMING_CHECK`.
 
 We are using UART1 for FC - Pi communications. The default settings works without modifications. Make sure to change
 the baud rate in the ArduPilot parameters and scripts/commands if you are not using the default.
-`SERIAL1_PROTOCOL 2 (MAVLink2)`
-`SERIAL1_BAUD 57600`
+```
+SERIAL1_PROTOCOL 2 (MAVLink2)
+SERIAL1_BAUD 115200
+```
 
 ### Tune the PID
 
@@ -372,14 +382,30 @@ data, improving the accuracy and reliability of the flight control system.
 3. Set the following parameters:
 
 ```
-INS_HNTCH_MODE 1
+INS_HNTCH_ENABLE 1
+INS_HNTCH_HMNCS 7 (for three harmonics for tri-blade props)
+INS_HNTCH_MODE 3 (ESC Telemetry)
 INS_HNTCH_FREQ 80
 INS_HNTCH_BW 40
 INS_ACCEL_FILTER 20
 INS_GYRO_FILTER 40 
 ```
 
-### Test Motors
+### Bi-Directional DShot for RPM
+```
+RPM1_TYPE 5 (ESC Telemetry Motors Bitmask)
+```
+Reboot.
+```
+RPM1_ESC_MASK 15 (Channels 1 - 4)
+SERVO_BLH_BDMASK 15 (Channels 1 - 4)
+SERVO_BLH_POLES 14 (If using another motor count the number of magnets inside the rotor and put in the correct nomber)
+SERVO_DSHOT_ESC 1 (BLHeli32/Kiss/AM32)
+```
+
+### Motors
+Set `MOT_PWM_TYPE` to DShot300.
+
 1. Disconnect FC from QGC.
 2. Connect battery to the drone and wait until it stops buzzing.
 3. Connect FC to QGC using USB.
