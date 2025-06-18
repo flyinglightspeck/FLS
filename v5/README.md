@@ -485,4 +485,25 @@ AHRS_GPS_USE 0 (Disabled)
 5. Connect the flow sensor using its connector the UART4 pin on the FC.
 
 
+## Localization Settings
 
+### Flow sensor and range finder
+```
+EK3_SRC1_POSXY 0 (ExternalNav)
+EK3_SRC1_POSZ 2 (RangeFinder)
+EK3_SRC1_VELXY 5 (OpticalFlow)
+```
+
+### Camera and range finder
+```
+EK3_SRC1_POSXY 6 (ExternalNav)
+EK3_SRC1_POSZ 2 (RangeFinder)
+EK3_SRC1_VELXY 0 (None)
+```
+
+### Vicon
+```
+EK3_SRC1_POSXY 6 (ExternalNav)
+EK3_SRC1_POSZ 6 (ExternalNav)
+EK3_SRC1_VELXY 0 (None)
+```
