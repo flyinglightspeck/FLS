@@ -1,5 +1,13 @@
 # 60mm FLS with MicoAir H743v2 AIO
 
+## V5.3.60
+
+![image](images/fls_v5.3.jpeg)
+![image](images/fls_v5.3_side.jpeg)
+![image](images/fls_v5.3_render.png)
+
+3D model: `v5/3d/FLS_v5.3.60.f3z`.
+
 ## Parts
 
 - [MicoAir H743v2 AIO 45A](https://store.micoair.com/product/micoair743v2-aio-45a/)
