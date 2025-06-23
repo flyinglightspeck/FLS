@@ -279,7 +279,7 @@ dtparam=spi=on
 
 ### Offboard Controller
 
-TBD
+Cone thi repository on RPI and follow the help from the controller.py to fly the FLS.
 
 ```
 git clone https://github.com/flslab/fls-ap-offboard-controller.git
@@ -311,7 +311,7 @@ make -j4
 Copy Config:
 
 ```
-cp ../src/camera_config.json .
+cp ../src/gs_camera_config.json .
 ```
 
 Run for 10 seconds to test:
@@ -342,6 +342,9 @@ packaging box of the FC.
 4. Choose ArduPilot and select Custom firmware file... from the dropdown menu.
 5. Hit Ok then browse and choose the `.apj` file you downloaded.
 6. Wait until installation completes. Disconnect and connect and the board again.
+
+You can load the parameters from `fls_v5.3.params` instead on setting them step by step using QGroundControl or Mission 
+Planner. Review all the changes before writing the values to check if they match your setup.
 
 ### Choose Frame Type
 
