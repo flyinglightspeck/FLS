@@ -518,3 +518,13 @@ EK3_SRC1_POSXY 6 (ExternalNav)
 EK3_SRC1_POSZ 6 (ExternalNav)
 EK3_SRC1_VELXY 0 (None)
 ```
+
+## Simulation
+
+Download ArduPilot repository and set it up, then run the following command:
+
+```
+ ./Tools/autotest/sim_vehicle.py -v ArduCopter
+```
+
+run the offboard controller using the `--sim` argument to connect to the simulator.
