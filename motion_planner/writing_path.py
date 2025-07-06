@@ -1,4 +1,5 @@
 import json
+import os.path
 from enum import Enum
 
 import numpy as np
@@ -6,8 +7,8 @@ import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 import matplotlib.animation as animation
-from scipy.interpolate import splprep, splev
-from scipy.integrate import quad
+from scipy.interpolate import splprep, splev, interp1d
+from scipy.integrate import quad, cumtrapz
 
 matplotlib.use("macosx")
 
@@ -55,16 +56,6 @@ strokes = {
         [(0, 2, 0), (0.5, 2, 0), (0.8, 1.7, 0), (0.8, 0.3, 0), (0.5, 0, 0), (0, 0, 0)]
     ],
     'E': [
-        # Vertical line
-        [(0, 0, 0), (0, 2, 0)],
-        # Top horizontal
-        [(0, 2, 0), (0.8, 2, 0)],
-        # Middle horizontal
-        [(0, 1, 0), (0.6, 1, 0)],
-        # Bottom horizontal
-        [(0, 0, 0), (0.8, 0, 0)]
-    ],
-    'E_2': [
         # Top horizontal
         [(0.8, 2, 0), (0, 2, 0)],
         # Vertical line
@@ -146,8 +137,8 @@ strokes = {
     ],
     'O': [
         # Circular motion starting from top
-        [(0.4, 2, 0), (0.7, 1.7, 0), (0.8, 1, 0), (0.7, 0.3, 0),
-         (0.4, 0, 0), (0.1, 0.3, 0), (0, 1, 0), (0.1, 1.7, 0), (0.4, 2, 0)]
+        [(0.4, 2, 0), (0.7, 1.75, 0), (0.8, 1, 0), (0.7, 0.25, 0),
+         (0.4, 0, 0), (0.1, 0.25, 0), (0, 1, 0), (0.1, 1.75, 0), (0.4, 2, 0)]
     ],
     'P': [
         # Vertical line
@@ -172,8 +163,8 @@ strokes = {
     ],
     'S': [
         # S curve
-        [(0.6, 1.7, 0), (0.35, 2, 0), (0, 1.7, 0), (0.15, 1.2, 0), (0.35, 1, 0),
-         (0.55, .8, 0), (0.7, 0.3, 0), (0.35, 0, 0), (0.1, 0.3, 0)]
+        [(0.7, 1.6, 0), (0.5, 1.95, 0), (0.18, 1.95, 0), (0, 1.6, 0), (0.12, 1.15, 0), (0.35, 1, 0),
+         (0.58, .85, 0), (0.7, 0.4, 0), (0.52, 0.05, 0), (0.2, 0.05, 0), (0, 0.4, 0)]
     ],
     'T': [
         # Top horizontal
@@ -228,18 +219,27 @@ strokes = {
 }
 
 
+class FLS:
+    def __init__(self, fps, speed, accel):
+        self.fps = fps
+        self.speed = speed
+        self.accel = accel
+
+
 class Segment:
-    def __init__(self, points, state, order, points_per_unit):
+    def __init__(self, points, state, order, fls):
         self.points = points
         self.state = state
         self.order = order
         self.smooth_path = None
-        self.trajectory = None
-        self.points_per_unit = points_per_unit
-        self.interpolate()
+        self.interpolate(fls)
 
-    def interpolate(self):
-        self.smooth_path = interpolate_3d_path(self.points, points_per_unit=self.points_per_unit)
+    def interpolate(self, fls):
+        if fls.accel:
+            self.smooth_path = interpolate_3d_path_with_accel(self.points, fls.fps, fls.speed, fls.accel)
+        else:
+            points_per_unit = fls.fps / fls.speed
+            self.smooth_path = interpolate_3d_path(self.points, points_per_unit=points_per_unit)
 
     @property
     def length(self):
@@ -270,15 +270,13 @@ class Segment:
 
 
 class WritingPath:
-    def __init__(self, letter, fls_speed=1.0, fps=30, width=1.0, height=1.5):
+    def __init__(self, letter, fls, width=1.0, height=1.5):
         self.letter = letter
         self.looping = True
         self.segments = []
-        self.fls_speed = fls_speed
-        self.fps = fps
+        self.fls = fls
         self.width = width
         self.height = height
-        self.points_per_unit = fps / fls_speed
         self.create_writing_path()
 
     def create_writing_path(self):
@@ -286,8 +284,7 @@ class WritingPath:
 
         order = 0
         for i, stroke in enumerate(pen_strokes):
-            lit_segment = Segment(points=stroke, state=SegmentState.LIT, order=order,
-                                  points_per_unit=self.points_per_unit)
+            lit_segment = Segment(points=stroke, state=SegmentState.LIT, order=order, fls=self.fls)
             self.segments.append(lit_segment)
             order += 1
             if i + 1 < len(pen_strokes):
@@ -295,7 +292,7 @@ class WritingPath:
                 prev_segment_end = pen_strokes[i][-1]
                 if not is_point_equal(next_segment_start, prev_segment_end):
                     dark_segment = Segment(points=[prev_segment_end, next_segment_start], state=SegmentState.DARK,
-                                           order=order, points_per_unit=self.points_per_unit)
+                                           order=order, fls=fls)
                     self.segments.append(dark_segment)
                     order += 1
 
@@ -311,7 +308,7 @@ class WritingPath:
 
         if not is_point_equal(path_start, path_end):
             return_segment = Segment(points=[path_end, path_start], state=SegmentState.RETURN, order=len(self.segments),
-                                     points_per_unit=self.points_per_unit)
+                                     fls=self.fls)
             self.segments.append(return_segment)
 
     def get_num_lit_segments(self):
@@ -347,7 +344,7 @@ class WritingPath:
 
     def get_animation_data(self):
         return {
-            "duration": self.length / self.fls_speed,
+            "duration": self.length / self.fls.speed,
             "segments": [
                 {
                     "state": str(segment.state),
@@ -357,16 +354,18 @@ class WritingPath:
         }
 
     def get_trajectory_data(self):
+        offset = np.array([-self.width / 2, 0.0, 0.0])
         trajectory = {
-            "fps": self.fps,
-            "duration": self.length / self.fls_speed,
+            "fps": self.fls.fps,
+            "duration": self.length / self.fls.speed,
+            "start_position": (self.segments[0].smooth_path[0] + offset).tolist(),
             "segments": []
         }
 
-        for segment in self.segments:
-            position = segment.smooth_path - np.array([self.width / 2, 0.0, 0.0])
+        for j, segment in enumerate(self.segments):
+            position = segment.smooth_path[1:] + offset
             velocity = []
-            dt = 1 / self.fps
+            dt = 1 / self.fls.fps
 
             for i in range(len(position)):
                 if i + 1 < len(position):
@@ -374,13 +373,21 @@ class WritingPath:
                     v = dp / dt
                     velocity.append(v.tolist())
                 else:
-                    velocity.append([0.0, 0.0, 0.0])
+                    if j + 1 < len(self.segments):
+                        next_segment = self.segments[j + 1]
+                    else:
+                        next_segment = self.segments[0]
+
+                    start_next_segment = next_segment.smooth_path[1] + offset
+                    dp = start_next_segment - position[i]
+                    v = dp / dt
+                    velocity.append(v.tolist())
 
             segment_trajectory = {
-                    "state": str(segment.state),
-                    "position": position.tolist(),
-                    "velocity": velocity
-                }
+                "state": str(segment.state),
+                "position": position.tolist(),
+                "velocity": velocity
+            }
             trajectory["segments"].append(segment_trajectory)
 
         return trajectory
@@ -416,17 +423,90 @@ class WritingPath:
         plt.savefig(f"letters/{self.letter}.png", dpi=300)
         plt.close(fig)
 
-    def visualize_interpolated_path(self):
-        fig = plt.figure(figsize=(4, 6))
-        ax = fig.add_subplot(111, projection='3d')
+    def visualize_trajectory(self, show_control_points=False, save=False):
+        fig = plt.figure(figsize=(3, 4))
+        ax = fig.add_subplot(111)
+        # ax = fig.add_subplot(111, projection='3d')
         for segment in self.segments:
-            # ax.plot(*np.array(segment.points).T, 'ro--')
-            ax.plot(*segment.smooth_path.T, 'bo--')
+            xy1 = np.array(segment.points)[:, [0, 2]]
+            xy2 = segment.smooth_path[:, [0, 2]]
+            if show_control_points:
+                ax.plot(*xy1.T, 'rs', markersize=3)
+            ax.plot(*xy2.T, 'o', color=state_color[segment.state], markersize=1.5)
         ax.set_aspect('equal')
-        ax.view_init(elev=0, azim=-90)
-        plt.show()
+        ax.axis('off')
+        # ax.set_title(self.get_filename())
 
-    def visualize_trajectory_animation(self, interval=33):
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+
+        if save:
+            plt.savefig(os.path.join("trajectory_data", self.get_filename('png')), dpi=300, bbox_inches='tight', pad_inches=0)
+            plt.close()
+        else:
+            plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+            plt.show()
+
+    def visualize_writing_path(self, show_control_points=True, show_segments=True, save=False):
+        scale = 1
+        fig = plt.figure(figsize=(2, 3))
+        ax = fig.add_subplot(111)
+        # ax = fig.add_subplot(111, projection='3d')
+        for i, segment in enumerate(self.segments):
+            xy1 = np.array(segment.points)[:, [0, 2]]
+            xy2 = segment.smooth_path[:, [0, 2]]
+            if show_control_points:
+                if segment.state == SegmentState.LIT:
+                    ax.plot(*xy1.T, 'rs', markersize=10)
+                    for j, p in enumerate(xy1):
+                        ax.text(p[0], p[1], str(j + 1), ha='center', va='center', fontsize=8, zorder=4,
+                                fontweight='bold', color="white")
+
+            if show_segments:
+                ax.plot(*xy2.T, '-', color=state_color[segment.state])
+
+                start = xy2[0]
+                ax.plot(start[0], start[1], 'o', markersize=14, color=state_color[segment.state], markeredgecolor='white', zorder=3)
+
+                ax.text(start[0], start[1], str(i+1), ha='center', va='center', fontsize=10, zorder=4, fontweight='bold', color="white")
+
+                p0 = xy2[0]
+                p1 = xy2[20]
+                direction = p1 - p0
+                direction = direction / np.linalg.norm(direction)  # Normalize
+
+                arrow_length = 0.075
+                arrow_start = p0
+                arrow_end = p0 + direction * arrow_length
+
+                # Draw arrow
+                ax.annotate("",
+                            xy=arrow_end,
+                            xytext=arrow_start,
+                            arrowprops=dict(arrowstyle="->", color=state_color[segment.state], linewidth=2))
+        ax.set_aspect('equal')
+        ax.axis('off')
+        ax.margins(x=0.1, y=0.1)
+        # ax.set_title(self.get_filename())
+
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+
+        if save:
+            file_name = f"{self.letter}"
+            if show_control_points:
+                file_name += "_control_points"
+            if show_segments:
+                file_name += "_segments"
+            file_name += ".png"
+            plt.savefig(os.path.join("writing_path", file_name), dpi=300, bbox_inches='tight', pad_inches=0)
+            plt.close()
+        else:
+            plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+            plt.show()
+
+    def visualize_trajectory_animation(self, save=False):
+        interval = 1000 // self.fls.fps
         fig, ax = plt.subplots(figsize=(4, 6))
         ax.set_xlim(-self.width, self.width)
         ax.set_ylim(-0.2, self.height + 0.2)
@@ -434,9 +514,9 @@ class WritingPath:
         ax.axis('off')
 
         traj_data = self.get_trajectory_data()
-        positions = []
-        velocities = []
-        colors = []
+        positions = [traj_data["start_position"]]
+        velocities = [traj_data["segments"][-1]["velocity"][-1]]
+        colors = [state_color[SegmentState.LIT]]
 
         # Flatten segments and gather data
         for segment in traj_data["segments"]:
@@ -465,7 +545,7 @@ class WritingPath:
             vx, _, vy = velocities[idx]
             color = colors[idx]
 
-            point.set_data(x, y)
+            point.set_data([x], [y])
             point.set_color(color)
 
             # Draw velocity arrow
@@ -479,7 +559,7 @@ class WritingPath:
             if frame > 0:
                 prev_idx = (frame - 1) % len(positions)
                 px, _, py = positions[prev_idx]
-                seg_color = colors[prev_idx]
+                seg_color = colors[idx]
                 seg_line = ax.plot([px, x], [py, y], color=seg_color, linewidth=1)[0]
                 path_segments.append(seg_line)
 
@@ -488,16 +568,34 @@ class WritingPath:
         ani = animation.FuncAnimation(fig, update, init_func=init, frames=len(positions),
                                       interval=interval, blit=True, repeat=True)
 
-        plt.show()
+        ax.set_title(self.get_filename())
+
+        plt.tight_layout(pad=0)
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
+        if save:
+            ani.save(os.path.join('trajectory_data', self.get_filename('gif')), writer='pillow', fps=self.fls.fps)
+            plt.close()
+        else:
+            plt.show()
+
+    def get_filename(self, postfix=None):
+        if self.fls.accel:
+            filename = f'{self.letter}_{self.width}x{self.height}m_fps{self.fls.fps}_speed{self.fls.speed}_accel{self.fls.accel}'
+        else:
+            filename = f'{self.letter}_{self.width}x{self.height}m_fps{self.fls.fps}_speed{self.fls.speed}'
+
+        if postfix is not None:
+            return filename + '.' + postfix
+        else:
+            return filename
 
     def save_animation_data(self):
-        with open(f'animation_data/{self.letter}_{self.width}x{self.height}m_fps{self.fps}_speed{self.fls_speed}.json',
-                  'w') as f:
+        with open(os.path.join('animation_data', self.get_filename('json')), 'w') as f:
             json.dump(self.get_animation_data(), f)
 
     def save_trajectory_data(self):
-        with open(f'trajectory_data/{self.letter}_{self.width}x{self.height}m_fps{self.fps}_speed{self.fls_speed}.json',
-                  'w') as f:
+        with open(os.path.join('trajectory_data', self.get_filename('json')), 'w') as f:
             json.dump(self.get_trajectory_data(), f)
 
     def __repr__(self):
@@ -539,12 +637,14 @@ def interpolate_3d_path(points, points_per_unit=10, closed_threshold=1e-6):
 
     is_closed = np.linalg.norm(points[0] - points[-1]) < closed_threshold
 
-    if is_closed:
-        points = points[:-1]
-        m -= 1
-        per = True
-    else:
-        per = False
+    # if is_closed:
+    #     points = points[:-1]
+    #     m -= 1
+    #     per = True
+    # else:
+    #     per = False
+
+    per = False
 
     # === Fallback for 2-point linear interpolation ===
     if m == 2:
@@ -570,22 +670,133 @@ def interpolate_3d_path(points, points_per_unit=10, closed_threshold=1e-6):
     us = np.linspace(0, 1, num_samples, endpoint=not per)
     smoothed_path = np.array(splev(us, tck)).T
 
-    if is_closed:
-        smoothed_path = np.vstack([smoothed_path, smoothed_path[0]])
-
     return smoothed_path
 
 
-if __name__ == '__main__':
-    writing_path = WritingPath('E_2', fls_speed=0.5, fps=30, width=0.4, height=0.6)
-    # writing_path.visualize()
-    # print(writing_path.get_animation_data())
-    # writing_path.save_animation_data()
-    # writing_path.save_trajectory_data()
-    writing_path.visualize_trajectory_animation()
-    # writing_path.visualize_interpolated_path()
+def interpolate_3d_path_with_accel(
+    points,
+    fps,
+    max_speed,      # units/sec
+    acceleration,   # units/sec^2
+    closed_threshold=1e-6
+):
+    points = np.array(points)
+    m = len(points)
 
-    # for letter in strokes.keys():
-    #     writing_path = WritingPath(letter)
-    #     writing_path.visualize()
-    #     print(f"{letter}, {writing_path.get_num_lit_segments()}, {writing_path.get_num_dark_segments()}, {writing_path.get_num_return_segments()}, {writing_path.get_num_all_segments()}")
+    if m < 2:
+        raise ValueError("Need at least two points to interpolate a path.")
+
+    is_closed = np.linalg.norm(points[0] - points[-1]) < closed_threshold
+    per = False
+
+    if m == 2:
+        return interpolate_linear_with_full_kinematics(points[0], points[1], fps, max_speed, acceleration)
+
+    # === General spline interpolation ===
+    x, y, z = points.T
+    k = min(3, m - 1)
+    tck, _ = splprep([x, y, z], s=0, per=per, k=k)
+
+    def speed_func(u_val):
+        dx, dy, dz = splev(u_val, tck, der=1)
+        return np.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+
+    # Estimate arc length
+    us_fine = np.linspace(0, 1, 2000)
+    speeds = np.array([speed_func(u) for u in us_fine])
+    arc_lengths = cumtrapz(speeds, us_fine, initial=0)
+    total_length = arc_lengths[-1]
+
+    # Get traveled distances at each time step
+    dt = 1.0 / fps
+    distances = simulate_motion_with_accel_decel(total_length, max_speed, acceleration, dt)
+
+    # Map distances to spline parameter u
+    dist_to_u = interp1d(arc_lengths, us_fine, kind='linear')
+    u_samples = dist_to_u(distances)
+    path = np.array(splev(u_samples, tck)).T
+    return path
+
+
+def interpolate_linear_with_full_kinematics(p0, p1, fps, max_speed, acceleration):
+    direction = p1 - p0
+    length = np.linalg.norm(direction)
+    if length < 1e-6:
+        return np.array([p0])
+
+    direction /= length
+    dt = 1.0 / fps
+    distances = simulate_motion_with_accel_decel(length, max_speed, acceleration, dt)
+    return np.array([p0 + direction * d for d in distances])
+
+
+def simulate_motion_with_accel_decel(length, v_max, a, dt, epsilon=1e-6):
+    """Simulates distances at fixed time steps considering acceleration, cruising, and deceleration."""
+    s_accel = v_max**2 / (2 * a)
+    s_decel = s_accel
+
+    if s_accel + s_decel >= length:
+        # Triangle profile (no cruise)
+        v_peak = np.sqrt(a * length)
+        s_accel = s_decel = length / 2
+        v_max = v_peak
+
+    distances = [0.0]
+    d = 0.0
+    v = 0.0
+
+    # Phase 1: Acceleration
+    while d < s_accel - epsilon:
+        v += a * dt
+        d += v * dt
+        distances.append(min(d, length))
+
+    # Phase 2: Cruise
+    s_cruise = length - s_accel - s_decel
+    if s_cruise > epsilon:
+        cruise_time = s_cruise / v_max
+        n_cruise = int(np.ceil(cruise_time / dt))
+        for _ in range(n_cruise):
+            d += v_max * dt
+            if d >= length - epsilon:
+                distances.append(length)
+                break
+            distances.append(d)
+
+    # Phase 3: Deceleration
+    v = v_max
+    while d < length - epsilon:
+        v = max(v - a * dt, 0)
+        if v < epsilon:
+            break
+        d += v * dt
+        distances.append(min(d, length))
+
+    # Ensure final position is exactly at the end
+    if distances[-1] < length - epsilon:
+        distances.append(length)
+
+    return distances
+
+
+if __name__ == '__main__':
+    if not os.path.exists("animation_data"):
+        os.mkdir("animation_data")
+    if not os.path.exists("trajectory_data"):
+        os.mkdir("trajectory_data")
+    if not os.path.exists("writing_path"):
+        os.mkdir("writing_path")
+
+    fls = FLS(speed=0.75, fps=30, accel=0.1)
+    # fls = FLS(speed=.25, fps=30, accel=0)
+    save = True
+    for letter in [
+        'N', 'E', 'S', 'O'
+    ]:
+        writing_path = WritingPath(letter, fls=fls, width=0.4, height=0.6)
+        writing_path.save_animation_data()
+        writing_path.save_trajectory_data()
+        writing_path.visualize_writing_path(show_segments=False, save=save)
+        writing_path.visualize_writing_path(show_control_points=False, save=save)
+        writing_path.visualize_trajectory(save=save)
+        writing_path.visualize_trajectory_animation(save=save)
