@@ -137,8 +137,14 @@ sudo vim /boot/firmware/config.txt
 
 Add the following line under [cm4] or [cm5]:
 
+for Raspberry Pi camera module 3:
 ```
 dtoverlay=imx708,cam0
+```
+
+For ov9281 global shutter camera:
+```
+dtoverlay=ov9281,cam0
 ```
 
 ### Enable UART
@@ -181,16 +187,28 @@ To proceed with installing Python packages activate the env:
 source env/bin/activate
 ```
 
+Also, add the above to the `.bashrc` file to always activate venv.
+
 ### Install Mavlink-Router
 
 Install [mavlink-router](https://github.com/mavlink-router/mavlink-router?tab=readme-ov-file).
+
+```commandline
+git clone https://github.com/mavlink-router/mavlink-router.git
+cd mavlink-router
+git submodule update --init --recursive
+sudo apt install git meson ninja-build pkg-config gcc g++ systemd
+meson setup build .
+ninja -C build
+sudo ninja -C build install
+```
 
 We will use this to connect to the drone using QGroundStation over WiFi and through Pi.
 
 When the Pi and ground computer are connected to the same network run this on the Pi:
 
 ```commandline
-mavlink-routerd -e 192.168.8.197:14550 /dev/ttyAMA0:115200
+mavlink-routerd -e 192.168.1.230:14550 /dev/ttyAMA0:115200
 ```
 
 Then open QGroundControl and wait until it connects to the FC.
@@ -270,7 +288,7 @@ pip install adafruit-circuitpython-neopixel-spi lgpio
 
 Enable SPI:
 ```
-vim /boot/firmware/config.txt
+sudo vim /boot/firmware/config.txt
 ```
 Paste this:
 ```
@@ -282,7 +300,10 @@ dtparam=spi=on
 Cone thi repository on RPI and follow the help from the controller.py to fly the FLS.
 
 ```
+cd ~
 git clone https://github.com/flslab/fls-ap-offboard-controller.git
+cd fls-ap-offboard-controller
+pip install -r requirements
 ```
 
 ### Marker Localization
@@ -294,6 +315,7 @@ sudo apt install -y cmake libopencv-dev nlohmann-json3-dev libeigen3-dev libcame
 ```
 
 ```
+cd ~
 git clone https://github.com/flslab/fls-marker-localization.git
 ```
 
@@ -404,10 +426,12 @@ data, improving the accuracy and reliability of the flight control system.
 
 ```
 INS_HNTCH_ENABLE 1
-INS_HNTCH_HMNCS 7 (for three harmonics for tri-blade props)
+INS_HNTCH_HMNCS 1 (set to 7 for three harmonics for tri-blade props)
 INS_HNTCH_MODE 3 (ESC Telemetry)
-INS_HNTCH_FREQ 80
-INS_HNTCH_BW 40
+INS_HNTCH_FREQ 400 (average hover RPM / 60)
+INS_HNTCH_BW 100 (INS_HNTCH_FREQ / 4)
+INS_HNTCH_REF 1
+INS_HNTCH_OPTS 6 (Multi-source, Update at loop rate)
 INS_ACCEL_FILTER 20
 INS_GYRO_FILTER 40 
 ```
@@ -420,7 +444,7 @@ Reboot.
 ```
 RPM1_ESC_MASK 15 (Channels 1 - 4)
 SERVO_BLH_BDMASK 15 (Channels 1 - 4)
-SERVO_BLH_POLES 14 (If using another motor count the number of magnets inside the rotor and put in the correct nomber)
+SERVO_BLH_POLES 12 (If using another motor count the number of magnets inside the rotor and put in the correct nomber)
 SERVO_DSHOT_ESC 1 (BLHeli32/Kiss/AM32)
 ```
 
@@ -497,6 +521,9 @@ AHRS_GPS_USE 0 (Disabled)
 
 
 ## Localization Settings
+```
+VISO_TYPE 1 (MAVLink)
+```
 
 ### Flow sensor and range finder
 ```
