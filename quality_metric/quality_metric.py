@@ -36,8 +36,8 @@ def chamfer_distance_optimized(a, b, save_as=""):
     a_nn_sq_dists = a_nn_dists ** 2
     b_nn_sq_dists = b_nn_dists ** 2
 
-    print(np.sqrt(np.mean(a_nn_sq_dists)))
-    print(np.sqrt(np.mean(b_nn_sq_dists)))
+    # print(np.sqrt(np.mean(a_nn_sq_dists)))
+    # print(np.sqrt(np.mean(b_nn_sq_dists)))
 
     rmse = np.sqrt(np.mean(a_nn_sq_dists))
 
@@ -66,7 +66,7 @@ def visualize_trajectories(trajectory_a, trajectory_b, save_as=""):
         plt.show()
 
 
-def load_vicon_trajectory(path, interval):
+def load_vicon_trajectory(path, interval, scale=1/1000):
     with open(path, 'r') as f:
         json_data = json.load(f)
 
@@ -76,7 +76,7 @@ def load_vicon_trajectory(path, interval):
     for frame in frames:
         trajectory.append(frame["tvec"])
 
-    return np.array(trajectory) / 1000
+    return np.array(trajectory) * scale
 
 
 def load_writing_trajectory(path):
@@ -93,11 +93,50 @@ def load_writing_trajectory(path):
 
 
 if __name__ == "__main__":
-    vicon_trajectory = load_vicon_trajectory("/Users/hamed/Documents/Holodeck/fls-ap-offboard-controller/logs/vicon_16_36_10_06_30_2025.json", (2862, 3764))
-    writing_trajectory = load_writing_trajectory("/Users/hamed/Documents/Holodeck/fls_prototype/FLS/blender/animation_data/S_0.4x0.6m_fps60_speed0.25.json")
-    # vicon_trajectory = np.array([[0, 0, 0], [10, 10, 10], [20, 20, 28]])
-    # writing_trajectory = np.array([[0, 0, 0], [10, 10, 10], [20, 20, 20]])
+    params = [
+        (
+            "E_vicon_09_38_11_07_25_2025.json",
+            (965, 2433),  # 3894, 5056
+            "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/E_2_0.4x0.6m_fps60_speed0.75_accel0.1.json",
+            "E"
+        ),
+        (
+            "O_vicon_09_40_08_07_25_2025.json",
+            (975, 1363),  # 1747, 2140
+            "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/O_0.4x0.6m_fps60_speed0.25.json",
+            "O"
+        ),
+        (
+            "S_vicon_09_42_15_07_25_2025.json",
+            (963, 1399),  # 1866, 2246
+            "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/S_0.4x0.6m_fps60_speed0.25.json",
+            "S"
+        ),
+        (
+            "N_vicon_10_06_30_07_25_2025.json",
+            (951, 2105),  # 3322, 4188
+            "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/N_0.4x0.6m_fps60_speed0.75_accel0.1.json",
+            "N"
+        )
+    ]
 
-    cd = chamfer_distance_optimized(vicon_trajectory, writing_trajectory, save_as="S")
+    # FLS 2
+    # E vicon_08_42_50_07_25_2025.json, vicon_08_46_16_07_25_2025.json, vicon_08_52_15_07_25_2025.json
+    # O vicon_08_54_16_07_25_2025.json, vicon_08_55_35_07_25_2025.json
+    # S vicon_08_57_05_07_25_2025.json, vicon_08_58_36_07_25_2025.json
+    # N vicon_09_30_45_07_25_2025.json, vicon_09_33_09_07_25_2025.json
 
-    print(cd)
+    # FLS 1
+    # E vicon_09_38_11_07_25_2025.json
+    # O vicon_09_40_08_07_25_2025.json
+    # S vicon_09_42_15_07_25_2025.json
+    # N vicon_10_13_16_07_25_2025.json, vicon_10_06_30_07_25_2025.json, vicon_09_44_19_07_25_2025.json (low bat), vicon_09_46_51_07_25_2025.json (low bat)
+
+
+    for vicon_log, interval, trajectory, letter in params:
+        vicon_trajectory = load_vicon_trajectory("fls1_vicon_2/" + vicon_log, interval)
+        writing_trajectory = load_writing_trajectory(trajectory)
+
+        cd = chamfer_distance_optimized(vicon_trajectory, writing_trajectory, save_as=letter)
+
+        print(f"{letter}: {cd*1000:.1f} (mm)")

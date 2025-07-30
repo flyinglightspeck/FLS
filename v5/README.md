@@ -303,7 +303,7 @@ Cone thi repository on RPI and follow the help from the controller.py to fly the
 cd ~
 git clone https://github.com/flslab/fls-ap-offboard-controller.git
 cd fls-ap-offboard-controller
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
 ### Marker Localization
@@ -333,7 +333,7 @@ make -j4
 Copy Config:
 
 ```
-cp ../src/gs_camera_config.json .
+cp ../src/gs_camera_config.json camera_config.json
 ```
 
 Run for 10 seconds to test:
@@ -466,8 +466,8 @@ If you need to change the direction of motors follow these steps:
    **Note:** you should restore these two parameters to their default values after the ESC 
    configuration, otherwise the ESC cannot be worked normally.
 2. Reboot the drone.
-3. Go to [esc-configurator.com](https://esc-configurator.com).
-4. Click on Open Port Selection in the upper right corner, select “MicoAir743“, and then click on Connect.
+3. Go to [esc-configurator.com](https://esc-configurator.com) or [am32 configurator](https://am32.ca/configurator).
+4. Click on Open Port Selection in the upper right corner, select "MicoAir743", and then click on Connect.
 5. Click on Read Settings in the bottom right corner to read the configuration of the ESCs.
 6. Change the motor rotation direction (Normal or Reverse) in the Motor Direction option for each ESC. The number 
    in front of ESC is the same as the numbers printed on the FC board.
@@ -511,6 +511,8 @@ EK3_SRC1_POSZ 2 (RangeFinder)
 EK3_SRC1_VELXY 5 (OpticalFlow)
 EK3_SRC1_VELZ 0 (None)
 EK3_SRC1_YAW 1 (Compass)
+EK3_GPS_CHECK 0
+EK3_HGT_DELAY 0
 ```
 
 ```
@@ -523,6 +525,7 @@ AHRS_GPS_USE 0 (Disabled)
 ## Localization Settings
 ```
 VISO_TYPE 1 (MAVLink)
+VISO_POSE_M_NSE 0.1
 ```
 
 ### Flow sensor and range finder
@@ -537,6 +540,7 @@ EK3_SRC1_VELXY 5 (OpticalFlow)
 EK3_SRC1_POSXY 6 (ExternalNav)
 EK3_SRC1_POSZ 2 (RangeFinder)
 EK3_SRC1_VELXY 0 (None)
+EK3_FLOW_USE None
 ```
 
 ### Vicon
@@ -544,6 +548,7 @@ EK3_SRC1_VELXY 0 (None)
 EK3_SRC1_POSXY 6 (ExternalNav)
 EK3_SRC1_POSZ 6 (ExternalNav)
 EK3_SRC1_VELXY 0 (None)
+EK3_FLOW_USE None
 ```
 
 ## Simulation
