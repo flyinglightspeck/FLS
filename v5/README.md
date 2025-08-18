@@ -208,7 +208,7 @@ We will use this to connect to the drone using QGroundStation over WiFi and thro
 When the Pi and ground computer are connected to the same network run this on the Pi:
 
 ```commandline
-mavlink-routerd -e 192.168.1.230:14550 /dev/ttyAMA0:115200
+mavlink-routerd -e 192.168.1.230:14550 /dev/ttyAMA0:921600
 ```
 
 Then open QGroundControl and wait until it connects to the FC.
@@ -303,6 +303,7 @@ Cone thi repository on RPI and follow the help from the controller.py to fly the
 cd ~
 git clone https://github.com/flslab/fls-ap-offboard-controller.git
 cd fls-ap-offboard-controller
+mkdir logs
 pip install -r requirements.txt
 ```
 
@@ -399,7 +400,7 @@ We are using UART1 for FC - Pi communications. The default settings works withou
 the baud rate in the ArduPilot parameters and scripts/commands if you are not using the default.
 ```
 SERIAL1_PROTOCOL 2 (MAVLink2)
-SERIAL1_BAUD 115200
+SERIAL1_BAUD 921600
 ```
 
 ### Tune the PID

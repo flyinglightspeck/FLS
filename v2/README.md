@@ -48,7 +48,7 @@ pip install --force-reinstall adafruit-blinka
 ```
 
 ### USB Configuration
-Ensure USB is enabled by adding the following to the RPI `/boot/firmware/config.txt`:
+Ensure USB is enabled by adding the following to the RPI `sudo`:
 ```
 dtoverlay=dwc2,dr_mode=host
 ```
