@@ -297,7 +297,12 @@ dtparam=spi=on
 
 ### Offboard Controller
 
-Cone thi repository on RPI and follow the help from the controller.py to fly the FLS.
+Install mocap lib requirements:
+```commandline
+sudo apt install libboost-system-dev libboost-thread-dev libeigen3-dev ninja-build
+```
+
+Clone this repository on RPI and follow the help from the controller.py to fly the FLS.
 
 ```
 cd ~
@@ -306,6 +311,8 @@ cd fls-ap-offboard-controller
 mkdir logs
 pip install -r requirements.txt
 ```
+
+lib motioncapture is the one from https://github.com/IMRCLab/libmotioncapture.
 
 ### Marker Localization
 
@@ -434,7 +441,7 @@ INS_HNTCH_BW 100 (INS_HNTCH_FREQ / 4)
 INS_HNTCH_REF 1
 INS_HNTCH_OPTS 6 (Multi-source, Update at loop rate)
 INS_ACCEL_FILTER 20
-INS_GYRO_FILTER 40 
+INS_GYRO_FILTER 100
 ```
 
 ### Bi-Directional DShot for RPM
