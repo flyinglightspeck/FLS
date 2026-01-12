@@ -314,6 +314,17 @@ pip install -r requirements.txt
 
 lib motioncapture is the one from https://github.com/IMRCLab/libmotioncapture.
 
+
+### Servo
+```commandline
+pip install gpiozero lgpio pigpio
+```
+Add to `/boot/firmware/config.txt`
+```
+dtoverlay=pwm
+```
+
+
 ### Marker Localization
 
 Install dependencies:

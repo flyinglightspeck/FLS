@@ -94,31 +94,52 @@ def load_writing_trajectory(path):
 
 if __name__ == "__main__":
     params = [
+        # (
+        #     "/Users/hamed/Documents/Holodeck/cam-pos-vis/cf_fls/E_2_rpi_e_vicon_12_34_43_08_15_2025.json",
+        #     (11358, 18328),
+        #     "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/E_2_0.4x0.6m_fps60_speed0.75_accel0.1.json",
+        #     "E_2_rpi_refactored"
+        # ),
+        # (
+        #     "/Users/hamed/Documents/Holodeck/cam-pos-vis/cf_fls/E_rpi_e_vicon_12_05_46_08_15_2025.json",
+        #     (11944, 19010),
+        #     "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/E_2_0.4x0.6m_fps60_speed0.75_accel0.1.json",
+        #     "E_rpi_refactored"
+        # ),
+        # (
+        #     "/Users/hamed/Documents/Holodeck/cam-pos-vis/cf_fls/E_cs_flslabwifi_vicon_10_11_54_08_15_2025.json",
+        #     (142, 861),
+        #     "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/E_2_0.4x0.6m_fps60_speed0.75_accel0.1.json",
+        #     "E_cs_wifi"
+        # ),
         (
-            "E_vicon_09_38_11_07_25_2025.json",
-            (965, 2433),  # 3894, 5056
+            "/Users/hamed/Documents/Holodeck/cam-pos-vis/cf_fls/E_rpi_vicon_09_18_39_08_26_2025.json",
+            (2168, 5108),
             "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/E_2_0.4x0.6m_fps60_speed0.75_accel0.1.json",
             "E"
         ),
         (
-            "O_vicon_09_40_08_07_25_2025.json",
-            (975, 1363),  # 1747, 2140
-            "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/O_0.4x0.6m_fps60_speed0.25.json",
-            "O"
+            "/Users/hamed/Documents/Holodeck/cam-pos-vis/cf_fls/N_rpi_vicon_09_21_28_08_26_2025.json",
+            (2097, 4650),
+            "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/N_0.4x0.6m_fps60_speed0.75_accel0.1.json",
+            "N"
         ),
         (
-            "S_vicon_09_42_15_07_25_2025.json",
-            (963, 1399),  # 1866, 2246
+            "/Users/hamed/Documents/Holodeck/cam-pos-vis/cf_fls/S_rpi_vicon_09_22_43_08_26_2025.json",
+            (2127, 3317),
             "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/S_0.4x0.6m_fps60_speed0.25.json",
             "S"
         ),
         (
-            "N_vicon_10_06_30_07_25_2025.json",
-            (951, 2105),  # 3322, 4188
-            "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/N_0.4x0.6m_fps60_speed0.75_accel0.1.json",
-            "N"
+            "/Users/hamed/Documents/Holodeck/cam-pos-vis/cf_fls/O_rpi_vicon_09_23_55_08_26_2025.json",
+            (2122, 3140),
+            "/Users/hamed/Documents/Holodeck/fls_prototype/FLS/motion_planner/animation_data/O_0.4x0.6m_fps60_speed0.25.json",
+            "O"
         )
     ]
+
+
+
 
     # FLS 2
     # E vicon_08_42_50_07_25_2025.json, vicon_08_46_16_07_25_2025.json, vicon_08_52_15_07_25_2025.json
@@ -134,7 +155,7 @@ if __name__ == "__main__":
 
 
     for vicon_log, interval, trajectory, letter in params:
-        vicon_trajectory = load_vicon_trajectory("fls1_vicon_2/" + vicon_log, interval)
+        vicon_trajectory = load_vicon_trajectory(vicon_log, interval, scale=1)
         writing_trajectory = load_writing_trajectory(trajectory)
 
         cd = chamfer_distance_optimized(vicon_trajectory, writing_trajectory, save_as=letter)
